@@ -49,9 +49,16 @@ import org.springframework.util.ObjectUtils;
  * @see PropertyOverrideConfigurer
  * @see PropertyPlaceholderConfigurer
  */
+
+/**
+ * 读取java配置文件，替换占位符数据
+ */
 public abstract class PropertyResourceConfigurer extends PropertiesLoaderSupport
 		implements BeanFactoryPostProcessor, PriorityOrdered {
 
+	/**
+	 * 最低优先级，在BeanFactoryPostProcessor中最后执行
+	 */
 	private int order = Ordered.LOWEST_PRECEDENCE;  // default: same as non-Ordered
 
 
