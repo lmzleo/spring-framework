@@ -513,43 +513,71 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	@Override
+	/**
+	 * spring容器初始化
+	 */
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
+			// 1. Prepare this context for refreshing.
 			prepareRefresh();
 
-			// Tell the subclass to refresh the internal bean factory.
+			/**
+			 * 2. 创建BeanFactory
+			 */
+			/**
+			 * 创建DefaultListableBeanFactory（真正生产和管理bean的容器）
+			 * 	加载BeanDefition并注册到BeanDefitionRegistry
+			 * 	通过NamespaceHandler解析自定义标签的功能（比如:context标签、aop标签、tx标签）
+			 */
+			// 3. Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
-			// Prepare the bean factory for use in this context.
+			// 4. Prepare the bean factory for use in this context.
 			prepareBeanFactory(beanFactory);
 
 			try {
-				// Allows post-processing of the bean factory in context subclasses.
+				// 5. Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 
-				// Invoke factory processors registered as beans in the context.
+				// 6. Invoke factory processors registered as beans in the context.
+				/**
+				 * 实例化并调用实现了BeanFactoryPostProcessor接口的Bean
+				 * 	比如：PropertyPlaceHolderConfigurer（context:property-placeholer）
+				 * 	就是此处被调用的，作用是替换掉BeanDefinition中的占位符（${}）中的内容
+				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
-				// Register bean processors that intercept bean creation.
+				//7.  Register bean processors that intercept bean creation.
+				/**
+				 * 创建并注册BeanPostProcessor到BeanFactory中（Bean的后置处理器）
+				 * 	比如：AutowiredAnnotationBeanPostProcessor（实现@Autowired注解功能）
+				 * 		   RequiredAnnotationBeanPostProcessor（实现@d注解功能）
+				 * 	这些注册的BeanPostProcessor
+				 */
 				registerBeanPostProcessors(beanFactory);
 
-				// Initialize message source for this context.
+				// 8. Initialize message source for this context.
 				initMessageSource();
 
-				// Initialize event multicaster for this context.
+				// 9. Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
 
-				// Initialize other special beans in specific context subclasses.
+				// 10. Initialize other special beans in specific context subclasses.
 				onRefresh();
 
-				// Check for listener beans and register them.
+				// 11. Check for listener beans and register them.
 				registerListeners();
 
+				/**
+				 * 12. 创建非懒加载方式的单例Bean实例（未设置属性）
+				 * 	填充属性
+				 * 	初始化实例（比如调用init-method方法）
+				 * 	调用BeanPostProcessor（后置处理器）对实例bean进行后置处理
+				 */
 				// Instantiate all remaining (non-lazy-init) singletons.
 				finishBeanFactoryInitialization(beanFactory);
 
-				// Last step: publish corresponding event.
+				// 13. Last step: publish corresponding event.
 				finishRefresh();
 			}
 
@@ -618,6 +646,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//刷新bean工厂
 		refreshBeanFactory();
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		if (logger.isDebugEnabled()) {
@@ -866,6 +895,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		/**
+		 * 实例化所有剩余的(非惰性初始化)单例
+		 */
 		beanFactory.preInstantiateSingletons();
 	}
 

@@ -42,6 +42,10 @@ import org.springframework.lang.Nullable;
  * @since January 19, 2001
  * @see ServletContextAware#setServletContext
  */
+
+/**
+ * web环境spring容器
+ */
 public interface WebApplicationContext extends ApplicationContext {
 
 	/**

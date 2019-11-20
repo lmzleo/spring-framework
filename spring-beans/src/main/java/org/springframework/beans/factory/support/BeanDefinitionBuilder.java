@@ -34,6 +34,10 @@ import org.springframework.util.ObjectUtils;
  * @author Juergen Hoeller
  * @since 2.0
  */
+
+/**
+ * BeanDefinition创建工厂
+ */
 public class BeanDefinitionBuilder {
 
 	/**

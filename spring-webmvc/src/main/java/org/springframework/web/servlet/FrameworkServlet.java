@@ -496,6 +496,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			/**
+			 * 初始化
+			 */
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();
 		}
@@ -521,8 +524,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextConfigLocation
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+		/**
+		 * 父容器
+		 */
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		/**
+		 * 子容器
+		 */
 		WebApplicationContext wac = null;
 
 		if (this.webApplicationContext != null) {
@@ -558,6 +567,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
 			// refreshed -> trigger initial onRefresh manually here.
+			/**
+			 * 初始化一些DispatchServlet的默认策略配置
+			 */
 			onRefresh(wac);
 		}
 
@@ -839,6 +851,10 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	/**
 	 * Override the parent class implementation in order to intercept PATCH requests.
 	 */
+	/**
+	 * 处理 http请求
+	 * 		http 请求之后由servlet的service方法接受，该方法由父类HttpService进行处理，此处覆盖父类的方法，处理PATCH请求
+	 */
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -953,6 +969,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * <p>The actual event handling is performed by the abstract
 	 * {@link #doService} template method.
 	 */
+	/**
+	 * 处理请求
+	 */
 	protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
@@ -971,6 +990,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
+			/**
+			 * 具体的处理类，调用DispatchServlet的处理方法
+			 */
 			doService(request, response);
 		}
 		catch (ServletException | IOException ex) {

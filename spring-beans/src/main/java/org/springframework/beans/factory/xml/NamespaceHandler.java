@@ -53,6 +53,9 @@ public interface NamespaceHandler {
 	 * construction but before any custom elements are parsed.
 	 * @see NamespaceHandlerSupport#registerBeanDefinitionParser(String, BeanDefinitionParser)
 	 */
+	/**
+	 * init方法只是注册了标签和处理类的对应关系
+	 */
 	void init();
 
 	/**

@@ -491,13 +491,20 @@ public class DispatcherServlet extends FrameworkServlet {
 	}
 
 	/**
+	 * 初始化这个servlet使用的策略对象
+	 * 		初始化了很多默认的组件
+	 *
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		/**
+		 * 读取DispatchServlet.propertis文件获取默认策略配置
+		 */
 		initMultipartResolver(context);
 		initLocaleResolver(context);
 		initThemeResolver(context);
+		//默认的HandlerMapping
 		initHandlerMappings(context);
 		initHandlerAdapters(context);
 		initHandlerExceptionResolvers(context);
@@ -580,6 +587,9 @@ public class DispatcherServlet extends FrameworkServlet {
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
+		/**
+		 * 从spring容器中获取HandlerMapping
+		 */
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerMapping> matchingBeans =
@@ -602,6 +612,14 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Ensure we have at least one HandlerMapping, by registering
 		// a default HandlerMapping if no other mappings are found.
+		/**
+		 * 通过注册，确保我们至少有一个HandlerMapping 如果没有找到其他映射，则使用默认HandlerMapping。
+		 *
+		 * 获取到的是
+		 * 	org.springframework.web.servlet.HandlerMapping=
+		 * 		org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,\
+		 * 		org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+		 */
 		if (this.handlerMappings == null) {
 			this.handlerMappings = getDefaultStrategies(context, HandlerMapping.class);
 			if (logger.isDebugEnabled()) {
@@ -835,8 +853,16 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * @return the List of corresponding strategy objects
 	 */
 	@SuppressWarnings("unchecked")
+	/**
+	 * 为给定的策略接口创建默认策略对象列表。
+	 */
 	protected <T> List<T> getDefaultStrategies(ApplicationContext context, Class<T> strategyInterface) {
 		String key = strategyInterface.getName();
+		/**
+		 * defaultStrategies：
+		 * 		是Properties类型的，里面存储了从DispatchServlet.properties文件中读取的配置
+		 * 		在static域中初始化
+		 */
 		String value = defaultStrategies.getProperty(key);
 		if (value != null) {
 			String[] classNames = StringUtils.commaDelimitedListToStringArray(value);
@@ -922,6 +948,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		try {
+			/**
+			 * 真正实现DispatchServlet作为前端控制器的方法
+			 */
 			doDispatch(request, response);
 		}
 		finally {
@@ -957,10 +986,16 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
+				/**
+				 * 处理含有文件上传的请求
+				 */
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
+				/**
+				 * 通过处理器映射器请求UTL，获取对应的处理器对象
+				 */
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
@@ -968,6 +1003,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Determine handler adapter for the current request.
+				/**
+				 * 根据查找到的处理器对象，找到可以适配它的处理器适配器对象
+				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -988,6 +1026,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Actually invoke the handler.
+				/**
+				 * 通过适配成功的处理器适配器对象，真正去执行处理器的方法，也就是我们编写的Controller类的方法
+				 */
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
@@ -1005,6 +1046,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				// making them available for @ExceptionHandler methods and other scenarios.
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
+			/**
+			 * 处理器执行结果，也就是对ModelAndView进行处理：视图解析，视图渲染
+			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {

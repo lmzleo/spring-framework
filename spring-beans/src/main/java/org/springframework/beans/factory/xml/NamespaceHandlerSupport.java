@@ -75,12 +75,16 @@ public abstract class NamespaceHandlerSupport implements NamespaceHandler {
 	}
 
 	/**
-	 * Locates the {@link BeanDefinitionParser} from the register implementations using
-	 * the local name of the supplied {@link Element}.
+	 * 调用BeanDefinitionParser的parse方法，处理自定义标签
 	 */
 	@Nullable
 	private BeanDefinitionParser findParserForElement(Element element, ParserContext parserContext) {
 		String localName = parserContext.getDelegate().getLocalName(element);
+		/**
+		 * this.parsers的值是有init方法初始化的根据标签名称，找到对应的处理器
+		 * AOP中：
+		 * 		registerBeanDefinitionParser("config", new ConfigBeanDefinitionParser());
+		 */
 		BeanDefinitionParser parser = this.parsers.get(localName);
 		if (parser == null) {
 			parserContext.getReaderContext().fatal(
@@ -130,9 +134,9 @@ public abstract class NamespaceHandlerSupport implements NamespaceHandler {
 
 
 	/**
-	 * Subclasses can call this to register the supplied {@link BeanDefinitionParser} to
-	 * handle the specified element. The element name is the local (non-namespace qualified)
-	 * name.
+	 * 子类可以调用它来注册提供的{@link BeanDefinitionParser}
+	 * 处理指定的元素。元素名是本地的(非名称空间限定的)
+	 * 的名字。
 	 */
 	protected final void registerBeanDefinitionParser(String elementName, BeanDefinitionParser parser) {
 		this.parsers.put(elementName, parser);

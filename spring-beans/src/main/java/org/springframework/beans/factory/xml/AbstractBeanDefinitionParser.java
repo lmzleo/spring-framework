@@ -59,7 +59,13 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 
 	@Override
 	@Nullable
+	/**
+	 * 标签解析从parse方法开始
+	 */
 	public final BeanDefinition parse(Element element, ParserContext parserContext) {
+		/**
+		 * 解析文档，获取BeanDefinition
+		 */
 		AbstractBeanDefinition definition = parseInternal(element, parserContext);
 		if (definition != null && !parserContext.isNested()) {
 			try {
@@ -77,6 +83,9 @@ public abstract class AbstractBeanDefinitionParser implements BeanDefinitionPars
 					}
 				}
 				BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, id, aliases);
+				/**
+				 * 完成BeanDefinition的注册
+				 */
 				registerBeanDefinition(holder, parserContext.getRegistry());
 				if (shouldFireEvents()) {
 					BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);

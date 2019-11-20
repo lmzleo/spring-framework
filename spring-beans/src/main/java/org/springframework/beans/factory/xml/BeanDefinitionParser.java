@@ -36,6 +36,10 @@ import org.springframework.lang.Nullable;
  * @see NamespaceHandler
  * @see AbstractBeanDefinitionParser
  */
+
+/**
+ * BeanDefinition解析器，将标签元素解析为BeanDefinition
+ */
 public interface BeanDefinitionParser {
 
 	/**
@@ -53,6 +57,9 @@ public interface BeanDefinitionParser {
 	 * @return the primary {@link BeanDefinition}
 	 */
 	@Nullable
+	/**
+	 * 标签解析从parse接口开始
+	 */
 	BeanDefinition parse(Element element, ParserContext parserContext);
 
 }

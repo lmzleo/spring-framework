@@ -45,6 +45,12 @@ import org.springframework.util.xml.DomUtils;
  * @author Chris Beams
  * @since 2.0
  */
+
+/**
+ * 处理tx:advisor 标签
+ * 所有的都是从父类BeanDefinitionParser的parse接口进入的，
+ * 	详情参照refresh()第二步loadBeanDefinitions流程
+ */
 class TxAdviceBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
 	private static final String METHOD_ELEMENT = "method";
@@ -68,11 +74,17 @@ class TxAdviceBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected Class<?> getBeanClass(Element element) {
+		/**
+		 * 该类为tx:advisor标签对应的处理类
+		 */
 		return TransactionInterceptor.class;
 	}
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+		/**
+		 * 找到事务管理器，将它作为属性应用关联到TransactionInterceptor类中
+		 */
 		builder.addPropertyReference("transactionManager", TxNamespaceHandler.getTransactionManagerName(element));
 
 		List<Element> txAttributes = DomUtils.getChildElementsByTagName(element, ATTRIBUTES_ELEMENT);
@@ -84,10 +96,16 @@ class TxAdviceBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 			// Using attributes source.
 			Element attributeSourceElement = txAttributes.get(0);
 			RootBeanDefinition attributeSourceDefinition = parseAttributeSource(attributeSourceElement, parserContext);
+			/**
+			 * 解析tx:attributes标签，并将解析到的值关联到TransactionInterceptor类中
+			 */
 			builder.addPropertyValue("transactionAttributeSource", attributeSourceDefinition);
 		}
 		else {
 			// Assume annotations source.
+			/**
+			 *	解析tx:attributes标签，并将解析到的值关联到TransactionInterceptor类中
+			 */
 			builder.addPropertyValue("transactionAttributeSource",
 					new RootBeanDefinition("org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"));
 		}

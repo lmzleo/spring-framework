@@ -500,6 +500,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			/**
+			 * 真正创建bean的代码
+			 */
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Finished creating instance of bean '" + beanName + "'");
@@ -540,6 +543,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			/**
+			 * 创建bean实例，但是未设置属性
+			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		final Object bean = instanceWrapper.getWrappedInstance();
@@ -577,7 +583,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			/**
+			 * 填充属性
+			 */
 			populateBean(beanName, mbd, instanceWrapper);
+			/**
+			 * 调用initmethod应用BeanPostProcessor
+			 */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1709,6 +1721,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			/**
+			 * AOP动态代理就是在此处发生的
+			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
@@ -1744,10 +1759,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @throws Throwable if thrown by init methods or by the invocation process
 	 * @see #invokeCustomInitMethod
 	 */
+	/**
+	 * 在创建Bean实例及设置完属性之后执行 	bean初始化方法
+	 * Spring有两种Bean的初始化（不是实例化）方式：
+	 * 		 一种是实现InitializingBean接口
+	 * 		 一种是通过反射调用bean标签中的init-method属性指定的方法。
+	 * 		 不同点：接口比配置效率高，但是配置消除了对spring的依赖。
+	 * InitializingBean接口为bean提供了初始化方法的方式。
+	 * 		它只包括afterPropertiesSet方法。
+	 * 		凡是实现该接口的类，在初始化bean的时候会执行该方法。
+	 *
+	 * 实现InitializingBean接口与在配置文件中指定init-method有什么不同？
+	 * 		系统先调用afterPropertiesSet方法
+	 * 		然后再调用init-method中指定的方法。
+	 */
 	protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
 			throws Throwable {
 
 		boolean isInitializingBean = (bean instanceof InitializingBean);
+		/**
+		 * 判断是否实现了InitializingBean接口
+		 */
 		if (isInitializingBean && (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Invoking afterPropertiesSet() on bean with name '" + beanName + "'");
@@ -1755,6 +1787,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (System.getSecurityManager() != null) {
 				try {
 					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+						/**
+						 * 调用afterPropertiesSet方法，完成初始化工作
+						 */
 						((InitializingBean) bean).afterPropertiesSet();
 						return null;
 					}, getAccessControlContext());
@@ -1764,11 +1799,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 			else {
+				/**
+				 * 调用afterPropertiesSet方法，完成初始化工作
+				 */
 				((InitializingBean) bean).afterPropertiesSet();
 			}
 		}
 
 		if (mbd != null && bean.getClass() != NullBean.class) {
+			/**
+			 * 调用init-method标签指定的方法
+			 */
 			String initMethodName = mbd.getInitMethodName();
 			if (StringUtils.hasLength(initMethodName) &&
 					!(isInitializingBean && "afterPropertiesSet".equals(initMethodName)) &&

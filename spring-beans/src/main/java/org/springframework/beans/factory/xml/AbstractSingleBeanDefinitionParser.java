@@ -59,12 +59,18 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	 * @see #doParse
 	 */
 	@Override
+	/**
+	 * 解析文档，获取BeanDefinition
+	 */
 	protected final AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 		String parentName = getParentName(element);
 		if (parentName != null) {
 			builder.getRawBeanDefinition().setParentName(parentName);
 		}
+		/**
+		 * 找到真正处理tx:advisor标签的类，我们要获取的BeanDefinition对象封装的就是该类的信息
+		 */
 		Class<?> beanClass = getBeanClass(element);
 		if (beanClass != null) {
 			builder.getRawBeanDefinition().setBeanClass(beanClass);
@@ -85,6 +91,10 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 			// Default-lazy-init applies to custom bean definitions as well.
 			builder.setLazyInit(true);
 		}
+		/**
+		 * 主要解析tx:advisor中的子标签信息，并将解析到的信息封装到BeanDefinition中
+		 *	该方法由具体实现类重写，如果没有则调用本类默认实现
+		 */
 		doParse(element, parserContext, builder);
 		return builder.getBeanDefinition();
 	}
@@ -142,6 +152,9 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	 * @param builder used to define the {@code BeanDefinition}
 	 * @see #doParse(Element, BeanDefinitionBuilder)
 	 */
+	/**
+	 * 具体实现由子类实现，默认不做任何事情
+	 */
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		doParse(element, builder);
 	}
@@ -152,6 +165,9 @@ public abstract class AbstractSingleBeanDefinitionParser extends AbstractBeanDef
 	 * <p>The default implementation does nothing.
 	 * @param element the XML element being parsed
 	 * @param builder used to define the {@code BeanDefinition}
+	 */
+	/**
+	 * 默认实现不做任何事情
 	 */
 	protected void doParse(Element element, BeanDefinitionBuilder builder) {
 	}

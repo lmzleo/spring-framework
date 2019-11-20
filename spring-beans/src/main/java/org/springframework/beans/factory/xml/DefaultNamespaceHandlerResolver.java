@@ -88,6 +88,13 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	 * (may be {@code null}, in which case the thread context ClassLoader will be used)
 	 * @see #DEFAULT_HANDLER_MAPPINGS_LOCATION
 	 */
+	/**
+	 * 使用默认的解析器加载namespaceHandler
+	 * http\://www.springframework.org/schema/c=org.springframework.beans.factory.xml.SimpleConstructorNamespaceHandler
+	 * http\://www.springframework.org/schema/p=org.springframework.beans.factory.xml.SimplePropertyNamespaceHandler
+	 * http\://www.springframework.org/schema/util=org.springframework.beans.factory.xml.UtilNamespaceHandler
+	 * @param classLoader
+	 */
 	public DefaultNamespaceHandlerResolver(@Nullable ClassLoader classLoader) {
 		this(classLoader, DEFAULT_HANDLER_MAPPINGS_LOCATION);
 	}
@@ -116,6 +123,7 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	@Nullable
 	public NamespaceHandler resolve(String namespaceUri) {
 		Map<String, Object> handlerMappings = getHandlerMappings();
+		//查找NamespaceHandler
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
 			return null;
@@ -132,6 +140,14 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 							"] does not implement the [" + NamespaceHandler.class.getName() + "] interface");
 				}
 				NamespaceHandler namespaceHandler = (NamespaceHandler) BeanUtils.instantiateClass(handlerClass);
+				/**
+				 * 调用对应的NamespaceHandler的子类方法，初始化自定义标签对应的功能处理组件
+				 * init方法只是注册了标签和处理类的对应关系
+				 *
+				 * 		这个方法是很重要的。它实现了自定义标签到处理类的注册工作，
+				 * 不过NamespaceHandler是一个接口，具体的init方法需要不同的实现类进行实现，
+				 * 我们通过AopNamespaceHandler了解一下init的作用，其中aop:config标签是由ConfigBeanDefinitionParser类进行处理：
+				 */
 				namespaceHandler.init();
 				handlerMappings.put(namespaceUri, namespaceHandler);
 				return namespaceHandler;

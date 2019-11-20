@@ -1347,6 +1347,9 @@ public class BeanDefinitionParserDelegate {
 		return TRUE_VALUE.equals(value);
 	}
 
+	/**
+	 * 解析自定义元素，比如aop标签，mvc标签，tx标签等
+	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele) {
 		return parseCustomElement(ele, null);
@@ -1354,15 +1357,26 @@ public class BeanDefinitionParserDelegate {
 
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		/**
+		 *	根据指定元素，查找beans跟标签中的xmlns:xxx属性值，比如根据aop:xxx找到xmlns:aop的值
+		 */
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
 		}
+		/**
+		 * resolve(namespaceUri):根据名称空间url解析对应的namespaceHandler
+		 */
 		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 		if (handler == null) {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		/**
+		 * 执行解析,改方法继承自NamespaceHandler，由NamespaceHandlerSupport子类实现
+		 * 		我们需要到NamespaceHandlerSupport类中去看看，它是实现NamespaceHandler接口的，
+		 * 并且XxxNamespaceHandler（AopNamespaceHandler）是继承了NamespaceHandlerSupport类，那么该方法也会继承到AopNamespaceHandler类中。
+		 */
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 

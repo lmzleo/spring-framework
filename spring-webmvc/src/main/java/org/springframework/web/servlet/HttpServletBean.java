@@ -145,6 +145,10 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * properties are missing), or if subclass initialization fails.
 	 */
 	@Override
+	/**
+	 * servlet被创建时调用init方法，父类GenericServlet实现了servlet的init方法
+	 * 覆盖父类的init方法
+	 */
 	public final void init() throws ServletException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Initializing servlet '" + getServletName() + "'");
@@ -169,6 +173,9 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+		/**
+		 * 完成servlet对象的初始化，其实也就是DispatchServlet的初始化
+		 */
 		initServletBean();
 
 		if (logger.isDebugEnabled()) {
