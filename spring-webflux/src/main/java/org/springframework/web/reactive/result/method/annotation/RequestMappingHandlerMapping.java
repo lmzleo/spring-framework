@@ -45,6 +45,13 @@ import org.springframework.web.reactive.result.method.RequestMappingInfoHandlerM
  * @author Rossen Stoyanchev
  * @since 5.0
  */
+
+/**
+ * 根据@RequestMapping注解查找处理器（HandlerMethod）
+ * 处理请求映射
+ * 父类事项了InitializingBean，初始化bean并设置属性后调用afterPropertiesSet方法
+ * 所以该类初始化入口从afterPropertiesSet方法开始
+ */
 public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMapping
 		implements EmbeddedValueResolverAware {
 
@@ -76,6 +83,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 		this.config.setPatternParser(getPathPatternParser());
 		this.config.setContentTypeResolver(getContentTypeResolver());
 
+		/**
+		 * 父类的该方法开始
+		 */
 		super.afterPropertiesSet();
 	}
 
@@ -91,6 +101,12 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	 * {@inheritDoc}
 	 * Expects a handler to have a type-level @{@link Controller} annotation.
 	 */
+	/**
+	 * 查看给定类型是否是Controoler
+	 * 		1. 该类被Controller注解
+	 * 	或者
+	 * 		2. 该类被RequestMapping注解
+	 */
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
 		return (AnnotatedElementUtils.hasAnnotation(beanType, Controller.class) ||
@@ -105,12 +121,24 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	 * @see #getCustomMethodCondition(Method)
 	 * @see #getCustomTypeCondition(Class)
 	 */
+	/**
+	 *使用方法和类型级别@RequestMapping注解来创建RequestMappingInfo
+	 */
 	@Override
 	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+		/**
+		 * 创建方法上的RequestMapping注解信息
+		 */
 		RequestMappingInfo info = createRequestMappingInfo(method);
 		if (info != null) {
+			/**
+			 * 创建类上的RequestMapping注解信息
+			 */
 			RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
 			if (typeInfo != null) {
+				/**
+				 * 合并类上和方法上的注解信息
+				 */
 				info = typeInfo.combine(info);
 			}
 		}
@@ -129,6 +157,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 		RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
 		RequestCondition<?> condition = (element instanceof Class ?
 				getCustomTypeCondition((Class<?>) element) : getCustomMethodCondition((Method) element));
+		/**
+		 * createRequestMappingInfo
+		 */
 		return (requestMapping != null ? createRequestMappingInfo(requestMapping, condition) : null);
 	}
 
@@ -179,6 +210,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	protected RequestMappingInfo createRequestMappingInfo(
 			RequestMapping requestMapping, @Nullable RequestCondition<?> customCondition) {
 
+		/**
+		 * 将RequestMapping注解中的信息封装到RequestMappingInfo对象中
+		 */
 		RequestMappingInfo.Builder builder = RequestMappingInfo
 				.paths(resolveEmbeddedValuesInPatterns(requestMapping.path()))
 				.methods(requestMapping.method())

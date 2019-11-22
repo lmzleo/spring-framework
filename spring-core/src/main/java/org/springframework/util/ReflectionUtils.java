@@ -61,11 +61,13 @@ public abstract class ReflectionUtils {
 	/**
 	 * Cache for {@link Class#getDeclaredMethods()} plus equivalent default methods
 	 * from Java 8 based interfaces, allowing for fast iteration.
+	 * 对方法进行缓存
 	 */
 	private static final Map<Class<?>, Method[]> declaredMethodsCache = new ConcurrentReferenceHashMap<>(256);
 
 	/**
 	 * Cache for {@link Class#getDeclaredFields()}, allowing for fast iteration.
+	 * 对类型和字段进行缓存
 	 */
 	private static final Map<Class<?>, Field[]> declaredFieldsCache = new ConcurrentReferenceHashMap<>(256);
 
@@ -76,6 +78,14 @@ public abstract class ReflectionUtils {
 	 * @param clazz the class to introspect
 	 * @param name the name of the field
 	 * @return the corresponding Field object, or {@code null} if not found
+	 */
+	/**
+	 * 根据属性名查询属性,查询所有属性，包括父类
+	 * spring方法命名：
+	 * 		get***：获取本类
+	 * 		find***：遍历所有父类
+	 * 		***；某项操作前准备
+	 * 		do***：具体实现某操作
 	 */
 	@Nullable
 	public static Field findField(Class<?> clazz, String name) {
@@ -92,6 +102,9 @@ public abstract class ReflectionUtils {
 	 * @return the corresponding Field object, or {@code null} if not found
 	 */
 	@Nullable
+	/**
+	 * 根据类型，字段名称和字段类型查询一个字段；该方法会遍历的向父类查询字段，查询到的是所有字段
+	 */
 	public static Field findField(Class<?> clazz, @Nullable String name, @Nullable Class<?> type) {
 		Assert.notNull(clazz, "Class must not be null");
 		Assert.isTrue(name != null || type != null, "Either name or type of the field must be specified");
@@ -119,6 +132,9 @@ public abstract class ReflectionUtils {
 	 * @param target the target object on which to set the field
 	 * @param value the value to set (may be {@code null})
 	 */
+	/**
+	 * 在指定对象（target）中给指定字段（field）设置指定值（value）；
+	 */
 	public static void setField(Field field, @Nullable Object target, @Nullable Object value) {
 		try {
 			field.set(target, value);
@@ -140,6 +156,9 @@ public abstract class ReflectionUtils {
 	 * @param target the target object from which to get the field
 	 * @return the field's current value
 	 */
+	/**
+	 * 在指定对象（target)上得到指定字段(field)的值；
+	 */
 	@Nullable
 	public static Object getField(Field field, @Nullable Object target) {
 		try {
@@ -160,6 +179,9 @@ public abstract class ReflectionUtils {
 	 * @param name the name of the method
 	 * @return the Method object, or {@code null} if none found
 	 */
+	/**
+	 * 在类型clazz上，查询无参的name方法，包括父类中查找
+	 */
 	@Nullable
 	public static Method findMethod(Class<?> clazz, String name) {
 		return findMethod(clazz, name, new Class<?>[0]);
@@ -174,6 +196,9 @@ public abstract class ReflectionUtils {
 	 * @param paramTypes the parameter types of the method
 	 * (may be {@code null} to indicate any signature)
 	 * @return the Method object, or {@code null} if none found
+	 */
+	/**
+	 * 在类型clazz上，查询name方法，参数类型列表为paramTypes；
 	 */
 	@Nullable
 	public static Method findMethod(Class<?> clazz, String name, @Nullable Class<?>... paramTypes) {
@@ -202,6 +227,9 @@ public abstract class ReflectionUtils {
 	 * @return the invocation result, if any
 	 * @see #invokeMethod(java.lang.reflect.Method, Object, Object[])
 	 */
+	/**
+	 * 在指定对象(target)上，执行方法（method)；
+	 */
 	@Nullable
 	public static Object invokeMethod(Method method, @Nullable Object target) {
 		return invokeMethod(method, target, new Object[0]);
@@ -216,6 +244,9 @@ public abstract class ReflectionUtils {
 	 * @param target the target object to invoke the method on
 	 * @param args the invocation arguments (may be {@code null})
 	 * @return the invocation result, if any
+	 */
+	/**
+	 * 在指定对象(target)上，使用指定参数(args)，执行方法（method)；
 	 */
 	@Nullable
 	public static Object invokeMethod(Method method, @Nullable Object target, @Nullable Object... args) {
@@ -252,6 +283,9 @@ public abstract class ReflectionUtils {
 	 * @throws SQLException the JDBC API SQLException to rethrow (if any)
 	 * @see #invokeMethod(java.lang.reflect.Method, Object, Object[])
 	 */
+	/**
+	 * 在指定对象(target)上，使用指定参数(args)，执行方法（method),主要征地jdbc方法
+	 */
 	@Nullable
 	public static Object invokeJdbcMethod(Method method, @Nullable Object target, @Nullable Object... args)
 			throws SQLException {
@@ -271,6 +305,9 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 处理反射中的异常
+	 * 除了在反射执行过程中遇到的Error，其余所有的Exception，都被统一转成了RuntimeException
+	 *
 	 * Handle the given reflection exception. Should only be called if no
 	 * checked exception is expected to be thrown by the target method.
 	 * <p>Throws the underlying RuntimeException or Error in case of an
@@ -349,6 +386,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断一个方法上是否声明了指定类型的异常；
+	 *
 	 * Determine whether the given method explicitly declares the given
 	 * exception or one of its superclasses, which means that an exception
 	 * of that type can be propagated as-is within a reflective invocation.
@@ -369,6 +408,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断字段是否是public static final的；
+	 *
 	 * Determine whether the given field is a "public static final" constant.
 	 * @param field the field to check
 	 */
@@ -378,6 +419,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断方法是否是equals方法；
+	 *
 	 * Determine whether the given method is an "equals" method.
 	 * @see java.lang.Object#equals(Object)
 	 */
@@ -390,6 +433,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断方法是否是hashcode方法；
+	 *
 	 * Determine whether the given method is a "hashCode" method.
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -398,6 +443,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断方法是否是toString方法
+	 *
 	 * Determine whether the given method is a "toString" method.
 	 * @see java.lang.Object#toString()
 	 */
@@ -406,6 +453,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 判断方法是否是Object类上的方法；
+	 *
 	 * Determine whether the given method is originally declared by {@link java.lang.Object}.
 	 */
 	public static boolean isObjectMethod(@Nullable Method method) {
@@ -422,6 +471,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 确定给定的方法是否是CGLIB“重命名”的方法，
+	 *
 	 * Determine whether the given method is a CGLIB 'renamed' method,
 	 * following the pattern "CGLIB$methodName$0".
 	 * @param renamedMethod the method to check
@@ -448,6 +499,9 @@ public abstract class ReflectionUtils {
 	 * @param field the field to make accessible
 	 * @see java.lang.reflect.Field#setAccessible
 	 */
+	/**
+	 * 将一个字段设置为可读写，主要针对private字段；
+	 */
 	@SuppressWarnings("deprecation")  // on JDK 9
 	public static void makeAccessible(Field field) {
 		if ((!Modifier.isPublic(field.getModifiers()) ||
@@ -465,6 +519,9 @@ public abstract class ReflectionUtils {
 	 * @param method the method to make accessible
 	 * @see java.lang.reflect.Method#setAccessible
 	 */
+	/**
+	 * 将一个方法设置为可调用，主要针对private方法；
+	 */
 	@SuppressWarnings("deprecation")  // on JDK 9
 	public static void makeAccessible(Method method) {
 		if ((!Modifier.isPublic(method.getModifiers()) ||
@@ -481,6 +538,9 @@ public abstract class ReflectionUtils {
 	 * @param ctor the constructor to make accessible
 	 * @see java.lang.reflect.Constructor#setAccessible
 	 */
+	/**
+	 * 将一个构造器设置为可调用，主要针对private构造器；
+	 */
 	@SuppressWarnings("deprecation")  // on JDK 9
 	public static void makeAccessible(Constructor<?> ctor) {
 		if ((!Modifier.isPublic(ctor.getModifiers()) ||
@@ -490,6 +550,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 * 获取给定类和参数的可访问构造函数
+	 *
 	 * Obtain an accessible constructor for the given class and parameters.
 	 * @param clazz the clazz to check
 	 * @param parameterTypes the parameter types of the desired constructor
@@ -515,6 +577,10 @@ public abstract class ReflectionUtils {
 	 * @throws IllegalStateException if introspection fails
 	 * @see #doWithMethods
 	 */
+	/**
+	 * 针对指定类型上的所有方法，依次调用MethodCallback回调，只对本类中的方法进行回调，不包括父类
+	 * 这个方法在Spring针对bean的方法上的标签处理时大量使用，比如@Init，@Resource，@Autowire等标签的预处理；
+	 */
 	public static void doWithLocalMethods(Class<?> clazz, MethodCallback mc) {
 		Method[] methods = getDeclaredMethods(clazz);
 		for (Method method : methods) {
@@ -537,6 +603,10 @@ public abstract class ReflectionUtils {
 	 * @throws IllegalStateException if introspection fails
 	 * @see #doWithMethods(Class, MethodCallback, MethodFilter)
 	 */
+	/**
+	 * 针对指定类型上的所有方法，依次调用MethodCallback回调，包括父类中的方法
+	 * 这个方法在Spring针对bean的方法上的标签处理时大量使用，比如@Init，@Resource，@Autowire等标签的预处理；
+	 */
 	public static void doWithMethods(Class<?> clazz, MethodCallback mc) {
 		doWithMethods(clazz, mc, null);
 	}
@@ -550,6 +620,11 @@ public abstract class ReflectionUtils {
 	 * @param mc the callback to invoke for each method
 	 * @param mf the filter that determines the methods to apply the callback to
 	 * @throws IllegalStateException if introspection fails
+	 */
+	/**
+	 * 针对指定类型上的所有方法，依次调用MethodCallback回调；
+	 * 得到类上所有方法，针对每一个方法，调用MethodFilter实现匹配检查，如果匹配上，调用MethodCallback回调方法。
+	 * 该方法会递归向上查询所有父类和实现的接口上的所有方法并处理；
 	 */
 	public static void doWithMethods(Class<?> clazz, MethodCallback mc, @Nullable MethodFilter mf) {
 		// Keep backing up the inheritance hierarchy.
@@ -576,6 +651,8 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
+	 *
+	 * 获取类和所有超类上所有的方法。首先包含本类方法，包含重写的方法
 	 * Get all declared methods on the leaf class and all superclasses.
 	 * Leaf class methods are included first.
 	 * @param leafClass the class to introspect
@@ -593,6 +670,9 @@ public abstract class ReflectionUtils {
 	 * any methods found with signatures matching a method already included are filtered out.
 	 * @param leafClass the class to introspect
 	 * @throws IllegalStateException if introspection fails
+	 */
+	/**
+	 * 获取类中所有的方法，不包含重写的方法，如果子类重写了父类的方法，则删除父类的方法
 	 */
 	public static Method[] getUniqueDeclaredMethods(Class<?> leafClass) {
 		final List<Method> methods = new ArrayList<>(32);
@@ -632,6 +712,9 @@ public abstract class ReflectionUtils {
 	 * @return the cached array of methods
 	 * @throws IllegalStateException if introspection fails
 	 * @see Class#getDeclaredMethods()
+	 */
+	/**
+	 * 获取类及所有接口的方法，不包括父类中的方法
 	 */
 	private static Method[] getDeclaredMethods(Class<?> clazz) {
 		Assert.notNull(clazz, "Class must not be null");
@@ -686,6 +769,10 @@ public abstract class ReflectionUtils {
 	 * @throws IllegalStateException if introspection fails
 	 * @see #doWithFields
 	 */
+	/**
+	 * 针对所有的字段，执行的对应的回调了
+	 * 得到类上所有的字段，并执行回调；同理，该方法在Spring中主要用于预处理字段上的@Autowire或者@Resource标签；
+	 */
 	public static void doWithLocalFields(Class<?> clazz, FieldCallback fc) {
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
@@ -703,6 +790,9 @@ public abstract class ReflectionUtils {
 	 * @param clazz the target class to analyze
 	 * @param fc the callback to invoke for each field
 	 * @throws IllegalStateException if introspection fails
+	 */
+	/**
+	 * 和doWithMethods的加强版相同，针对字段，也提供了一个拥有字段匹配（过滤）的功能方法
 	 */
 	public static void doWithFields(Class<?> clazz, FieldCallback fc) {
 		doWithFields(clazz, fc, null);
@@ -744,6 +834,10 @@ public abstract class ReflectionUtils {
 	 * @return the cached array of fields
 	 * @throws IllegalStateException if introspection fails
 	 * @see Class#getDeclaredFields()
+	 */
+	/**
+	 * 该变量从本地缓存中检索{@link Class#getDeclaredFields()}
+	 * *为了避免		JVM的SecurityManager检查		和		防御数组复制		。
 	 */
 	private static Field[] getDeclaredFields(Class<?> clazz) {
 		Assert.notNull(clazz, "Class must not be null");
@@ -801,6 +895,9 @@ public abstract class ReflectionUtils {
 		 * Perform an operation using the given method.
 		 * @param method the method to operate on
 		 */
+		/**
+		 * 使用指定方法完成一些操作.
+		 */
 		void doWith(Method method) throws IllegalArgumentException, IllegalAccessException;
 	}
 
@@ -812,6 +909,8 @@ public abstract class ReflectionUtils {
 	public interface MethodFilter {
 
 		/**
+		 * 检查一个指定的方法是否匹配规则
+		 *
 		 * Determine whether the given method matches.
 		 * @param method the method to check
 		 */
@@ -826,6 +925,8 @@ public abstract class ReflectionUtils {
 	public interface FieldCallback {
 
 		/**
+		 * 给指定的字段执行操作
+		 *
 		 * Perform an operation using the given field.
 		 * @param field the field to operate on
 		 */
@@ -840,6 +941,8 @@ public abstract class ReflectionUtils {
 	public interface FieldFilter {
 
 		/**
+		 * 检查给定字段是否匹配
+		 *
 		 * Determine whether the given field matches.
 		 * @param field the field to check
 		 */

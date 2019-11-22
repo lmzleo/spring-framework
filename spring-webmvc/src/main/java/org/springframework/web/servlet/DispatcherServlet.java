@@ -319,6 +319,12 @@ public class DispatcherServlet extends FrameworkServlet {
 	private ThemeResolver themeResolver;
 
 	/** List of HandlerMappings used by this servlet */
+	/**
+	 * 默认：
+	 * org.springframework.web.servlet.HandlerMapping=
+	 * 		 * 		org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,\
+	 * 		 * 		org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+	 */
 	@Nullable
 	private List<HandlerMapping> handlerMappings;
 
@@ -1103,6 +1109,9 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 			else {
 				Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
+				/**
+				 * 调用异常处理器，处理异常
+				 */
 				mv = processHandlerException(request, response, handler, exception);
 				errorView = (mv != null);
 			}
@@ -1110,6 +1119,9 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Did the handler return a view to render?
 		if (mv != null && !mv.wasCleared()) {
+			/**
+			 * 视图渲染方法，这里调用了视图解析器的功能
+			 */
 			render(mv, request, response);
 			if (errorView) {
 				WebUtils.clearErrorRequestAttributes(request);
@@ -1224,11 +1236,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		if (this.handlerMappings != null) {
+			/**
+			 * 这里的handlerMappings就是在初始化流程中赋值的
+			 */
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(
 							"Testing handler map [" + hm + "] in DispatcherServlet with name '" + getServletName() + "'");
 				}
+				/**
+				 * 获取到的HandlerExecutionChain对象中包含一个Object类型的handler属性，这个属性就是我们要的Handler对象
+				 */
 				HandlerExecutionChain handler = hm.getHandler(request);
 				if (handler != null) {
 					return handler;
@@ -1269,6 +1287,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing handler adapter [" + ha + "]");
 				}
+				/**
+				 * 调用适配器适配方法，看看处理器和适配器是否是一对
+				 */
 				if (ha.supports(handler)) {
 					return ha;
 				}
@@ -1343,6 +1364,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
+			/**
+			 * 根据视图名称，调用视图解析器，解析出来视图对象
+			 */
 			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
 			if (view == null) {
 				throw new ServletException("Could not resolve view with name '" + mv.getViewName() +
@@ -1408,6 +1432,9 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		if (this.viewResolvers != null) {
 			for (ViewResolver viewResolver : this.viewResolvers) {
+				/**
+				 * 视图解析器的解析方法
+				 */
 				View view = viewResolver.resolveViewName(viewName, locale);
 				if (view != null) {
 					return view;

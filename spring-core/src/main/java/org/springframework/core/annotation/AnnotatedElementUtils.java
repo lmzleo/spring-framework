@@ -568,6 +568,9 @@ public class AnnotatedElementUtils {
 	 * @since 4.3
 	 * @see #isAnnotated(AnnotatedElement, Class)
 	 */
+	/**
+	 * 判断给定的类型是否被注解或注解父类标注
+	 */
 	public static boolean hasAnnotation(AnnotatedElement element, Class<? extends Annotation> annotationType) {
 		// Shortcut: directly present on the element, with no processing needed?
 		if (element.isAnnotationPresent(annotationType)) {
@@ -669,6 +672,11 @@ public class AnnotatedElementUtils {
 	 * @see #findAllMergedAnnotations(AnnotatedElement, Class)
 	 * @see #findMergedAnnotationAttributes(AnnotatedElement, String, boolean, boolean)
 	 * @see #getMergedAnnotationAttributes(AnnotatedElement, Class)
+	 */
+	/**
+	 *  在element上查询annotationType类型注解
+	 *  将查询出的多个annotationType类型注解属性合并到查询的第一个注解中
+	 *  # 多个相同注解合并
 	 */
 	@Nullable
 	public static <A extends Annotation> A findMergedAnnotation(AnnotatedElement element, Class<A> annotationType) {

@@ -58,6 +58,8 @@ import org.springframework.util.ReflectionUtils;
 public abstract class AopUtils {
 
 	/**
+	 * 判定一个对象，是否是代理对象；
+	 *
 	 * Check whether the given object is a JDK dynamic proxy or a CGLIB proxy.
 	 * <p>This method additionally checks if the given object is an instance
 	 * of {@link SpringProxy}.
@@ -66,11 +68,22 @@ public abstract class AopUtils {
 	 * @see #isCglibProxy
 	 */
 	public static boolean isAopProxy(@Nullable Object object) {
+		/**
+		 * object instanceof SpringProxy:
+		 * 		判断是否是SpringProxy类型，Spring中的所有的代理对象，都会实现这个接口
+		 * Proxy.isProxyClass(object.getClass()):
+		 * 		判定该对象是否是JDK的代理实现，即是否是基于接口代理
+		 * ClassUtils.isCglibProxyClass:
+		 * 		使用ClassUtils的isCglibProxyClass方法判断该对象是否是cglib代理实现
+		 *
+		 */
 		return (object instanceof SpringProxy &&
 				(Proxy.isProxyClass(object.getClass()) || ClassUtils.isCglibProxyClass(object.getClass())));
 	}
 
 	/**
+	 * 判断是否是JDK代理对象；
+	 *
 	 * Check whether the given object is a JDK dynamic proxy.
 	 * <p>This method goes beyond the implementation of
 	 * {@link Proxy#isProxyClass(Class)} by additionally checking if the
@@ -83,6 +96,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 判断是否是Cglib代理对象；
+	 *
 	 * Check whether the given object is a CGLIB proxy.
 	 * <p>This method goes beyond the implementation of
 	 * {@link ClassUtils#isCglibProxy(Object)} by additionally checking if
@@ -95,6 +110,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 用于获取对象的真实类型
+	 *
 	 * Determine the target class of the given bean instance which might be an AOP proxy.
 	 * <p>Returns the target class for an AOP proxy or the plain class otherwise.
 	 * @param candidate the instance to check (might be an AOP proxy)
@@ -106,9 +123,19 @@ public abstract class AopUtils {
 	public static Class<?> getTargetClass(Object candidate) {
 		Assert.notNull(candidate, "Candidate object must not be null");
 		Class<?> result = null;
+		/**
+		 * TargetClassAware:
+		 *		该接口是SpringAOP代理类去实现的接口，比如通过ProxyFactoryBean实现的代理对象，都会实现这个接口。
+		 *		这个接口中定义了getTargetClass方法，用于获取动态代理对象的原始类型
+		 *
+		 */
 		if (candidate instanceof TargetClassAware) {
 			result = ((TargetClassAware) candidate).getTargetClass();
 		}
+		/**
+		 * 如果是Cglib的动态代理实现，则直接返回该类的父类，我们知道，cglib就是通过继承来完成动态代理的，所以代理对象的父类即为真实对象类型；
+		 * 否则，剩下的就是JDK完成的代理，只需要得到本身类型即可，因为这就是接口的类型
+		 */
 		if (result == null) {
 			result = (isCglibProxy(candidate) ? candidate.getClass().getSuperclass() : candidate.getClass());
 		}
@@ -126,6 +153,9 @@ public abstract class AopUtils {
 	 * target type (typically due to a proxy mismatch)
 	 * @since 4.3
 	 * @see MethodIntrospector#selectInvocableMethod(Method, Class)
+	 */
+	/**
+	 * 在目标类型上选择一个可调用的方法:给定的方法本身如果实际暴露在目标类型上，或者相应的方法上在目标类型的一个接口上或在目标类型本身上。
 	 */
 	public static Method selectInvocableMethod(Method method, @Nullable Class<?> targetType) {
 		if (targetType == null) {
@@ -191,6 +221,13 @@ public abstract class AopUtils {
 	 * {@code targetClass} doesn't implement it or is {@code null}
 	 * @see org.springframework.util.ClassUtils#getMostSpecificMethod
 	 */
+	/**
+	 * 他能从代理对象上的一个方法，找到真实对象上对应的方法。
+	 * 举个例子:
+	 * 			MyComponent代理之后的对象上的someLogic方法，肯定是属于cglib代理之后的类上的method，
+	 * 		使用这个method是没法去执行目标MyComponent的someLogic方法，这种情况下，就可以使用getMostSpecificMethod，
+	 * 		找到真实对象上的someLogic方法，并执行真实方法
+	 */
 	public static Method getMostSpecificMethod(Method method, @Nullable Class<?> targetClass) {
 		Class<?> specificTargetClass = (targetClass != null ? ClassUtils.getUserClass(targetClass) : null);
 		Method resolvedMethod = ClassUtils.getMostSpecificMethod(method, specificTargetClass);
@@ -199,6 +236,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 判断一个切入点能否匹配一个指定的类型
+	 *
 	 * Can the given pointcut apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize
 	 * out a pointcut for a class.
@@ -211,6 +250,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 判断一个切入点能否匹配一个指定的类型，是否支持引入匹配
+	 *
 	 * Can the given pointcut apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize
 	 * out a pointcut for a class.
@@ -219,6 +260,13 @@ public abstract class AopUtils {
 	 * @param hasIntroductions whether or not the advisor chain
 	 * for this bean includes any introductions
 	 * @return whether the pointcut can apply on any method
+	 */
+	/**
+	 * hasIntroductions:
+	 * 		用于指定，判定是否包含introduction，如果不包含introduction，匹配会更加的有效；
+	 * 	introduction:
+	 * 		使用AOP来改变对象本来的行为，比如使用AOP为一个类动态的添加一个父类，或者额外实现一个接口，甚至增加一个字段等等操作。
+	 *
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
@@ -258,6 +306,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 判断一个建议(advisor)能否匹配一个指定的类型；
+	 *
 	 * Can the given advisor apply at all on the given class?
 	 * This is an important test as it can be used to optimize
 	 * out a advisor for a class.
@@ -270,6 +320,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 判断一个建议(advisor)能否匹配一个指定的类型，是否支持引入匹配；
+	 *
 	 * Can the given advisor apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize out a advisor for a class.
 	 * This version also takes into account introductions (for IntroductionAwareMethodMatchers).
@@ -294,6 +346,8 @@ public abstract class AopUtils {
 	}
 
 	/**
+	 * 在一组建议(advisor)中，返回能够匹配指定类型的建议者列表；
+	 *
 	 * Determine the sublist of the {@code candidateAdvisors} list
 	 * that is applicable to the given class.
 	 * @param candidateAdvisors the Advisors to evaluate
@@ -332,6 +386,9 @@ public abstract class AopUtils {
 	 * @return the invocation result, if any
 	 * @throws Throwable if thrown by the target method
 	 * @throws org.springframework.aop.AopInvocationException in case of a reflection error
+	 */
+	/**
+	 * 执行一个目标方法；这个方法其实就是method.invoke方法的更完善的方法，指在target对象上，使用args参数列表执行method；
 	 */
 	@Nullable
 	public static Object invokeJoinpointUsingReflection(@Nullable Object target, Method method, Object[] args)

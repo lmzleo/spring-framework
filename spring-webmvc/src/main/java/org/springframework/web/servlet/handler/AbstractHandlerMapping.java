@@ -347,6 +347,11 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		/**
+		 * getHandlerInternal：
+		 * 		交给具体的子类去实现，不通的子类返回的Handler对象是不一样的，比如使用RequestMappingHandlerMapping返回的
+		 * 	Handler对象类型其实是HandlerMethod
+		 */
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
 			handler = getDefaultHandler();
@@ -360,6 +365,10 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		/**
+		 * getHandlerExecutionChain
+		 * 		将Handler和HandlerInterceptor封装成一个执行链对象
+		 */
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 		if (CorsUtils.isCorsRequest(request)) {
 			CorsConfiguration globalConfig = this.globalCorsConfigSource.getCorsConfiguration(request);

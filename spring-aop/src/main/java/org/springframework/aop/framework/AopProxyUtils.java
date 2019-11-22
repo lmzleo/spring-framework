@@ -32,6 +32,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * AOP代理工厂的实用方法。主要用于AOP框架内的内部使用。
+ *
  * Utility methods for AOP proxy factories.
  * Mainly for internal use within the AOP framework.
  *
@@ -45,6 +47,8 @@ import org.springframework.util.ObjectUtils;
 public abstract class AopProxyUtils {
 
 	/**
+	 * 获取给定代理背后的单例目标对象(如果有的话)。
+	 *
 	 * Obtain the singleton target object behind the given proxy, if any.
 	 * @param candidate the (potential) proxy to check
 	 * @return the singleton target object managed in a {@link SingletonTargetSource},
@@ -55,9 +59,13 @@ public abstract class AopProxyUtils {
 	 */
 	@Nullable
 	public static Object getSingletonTarget(Object candidate) {
+		//如果当前获取的目标对象是一个Advised类型对象
 		if (candidate instanceof Advised) {
+			//通过getTargetSource方法获取代理目标
 			TargetSource targetSource = ((Advised) candidate).getTargetSource();
+			//如果代理目标对象是一个SingletonTargetSource
 			if (targetSource instanceof SingletonTargetSource) {
+				//获取当前代理对象的真正目标对象（可能还是一个代理对象）
 				return ((SingletonTargetSource) targetSource).getTarget();
 			}
 		}
@@ -65,6 +73,8 @@ public abstract class AopProxyUtils {
 	}
 
 	/**
+	 * 获取一个代理对象的最终对象类型
+	 *
 	 * Determine the ultimate target class of the given bean instance, traversing
 	 * not only a top-level proxy but any number of nested proxies as well &mdash;
 	 * as long as possible without side effects, that is, just for singleton targets.
@@ -76,16 +86,36 @@ public abstract class AopProxyUtils {
 	 */
 	public static Class<?> ultimateTargetClass(Object candidate) {
 		Assert.notNull(candidate, "Candidate object must not be null");
+		//current用于判断
 		Object current = candidate;
 		Class<?> result = null;
+		//直到当前获得的对象不是TargetClassAware类型
 		while (current instanceof TargetClassAware) {
+			//获得当前对象（一个代理对象）代理的目标对象（这个对象可能还是一个代理对象）类型；
 			result = ((TargetClassAware) current).getTargetClass();
 			current = getSingletonTarget(current);
 		}
+		//如果获取到的目标对象是一个cglib代理对象，获取父类类型（才是目标类型）
 		if (result == null) {
 			result = (AopUtils.isCglibProxy(candidate) ? candidate.getClass().getSuperclass() : candidate.getClass());
 		}
 		return result;
+		/**
+		 * 这里面涉及到了很多SpringAOP中的接口，比如TargetClassAware，Advised，TargetSource，SingletonTargetSource等；
+		 * 这些接口都是SpringAOP中的一些重要接口:
+		 *
+		 * TargetClassAware：所有的Aop代理对象或者代理工厂（proxy factory)都要实现的接口，该接口用于暴露出被代理目标对象类型；
+		 *
+		 * TargetSource：该接口代表一个目标对象，在aop调用目标对象的时候，使用该接口返回真实的对象。
+		 * 				比如该接口的一个实现：PrototypeTargetSource，那就是每次调用都返回一个全新的对象实例；
+		 *
+		 * Advised：该接口用于保存一个代理的相关配置（简单理解为这个对象保存了怎么创建一个代理对象的信息），
+		 * 			比如这个代理配置相关的拦截器，建议(advisor)或者增强器（advice)；所有的代理对象都实现了该接口
+		 * 			（我们就能够通过一个代理对象获取这个代理对象怎么被代理出来的相关信息）；
+		 *
+		 * 		Advised接口中的getTargetSource返回的就是TargetSource。意思就是Advised和TargetSource接口虽然在继承关系上，
+		 * 	都是继承了TargetClassAware接口，看似平级关系，实际上确实组合关系：
+		 */
 	}
 
 	/**

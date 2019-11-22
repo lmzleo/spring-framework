@@ -41,6 +41,8 @@ import org.springframework.util.ReflectionUtils;
 public abstract class MethodIntrospector {
 
 	/**
+	 * 据相关元数据的查找选择给定目标类型的方法。
+	 *
 	 * Select methods on the given target type based on the lookup of associated metadata.
 	 * <p>Callers define methods of interest through the {@link MetadataLookup} parameter,
 	 * allowing to collect the associated metadata into the result map.
@@ -53,7 +55,11 @@ public abstract class MethodIntrospector {
 	 */
 	public static <T> Map<Method, T> selectMethods(Class<?> targetType, final MetadataLookup<T> metadataLookup) {
 		final Map<Method, T> methodMap = new LinkedHashMap<>();
+		/**
+		 * 本类及所有实现接口类类型
+		 */
 		Set<Class<?>> handlerTypes = new LinkedHashSet<>();
+		//本类类型
 		Class<?> specificHandlerType = null;
 
 		if (!Proxy.isProxyClass(targetType)) {
@@ -66,11 +72,24 @@ public abstract class MethodIntrospector {
 			final Class<?> targetClass = (specificHandlerType != null ? specificHandlerType : currentHandlerType);
 
 			ReflectionUtils.doWithMethods(currentHandlerType, method -> {
+				//获得最匹配的一个可以执行的方法
 				Method specificMethod = ClassUtils.getMostSpecificMethod(method, targetClass);
+				/**
+				 * 方法传递，传递的是一个方法，具体得到的结果由自雷调用传入的参数决定
+				 *
+				 * metadataLookup对应的对象是通过匿名内部类方式创建的，调用它的inspect方法会调用匿名内部类的实现
+				 *
+				 * 匿名内部类的实现中会调用RequestMappingHandlerMapping的getMappingForMethod方法
+				 *
+				 * 返回RequestMappingInfo对象
+				 */
 				T result = metadataLookup.inspect(specificMethod);
 				if (result != null) {
 					Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);
 					if (bridgedMethod == specificMethod || metadataLookup.inspect(bridgedMethod) == null) {
+						/**
+						 * 将Method对象和RequestMappingInfo对象放入Map集合中进行映射
+						 */
 						methodMap.put(specificMethod, result);
 					}
 				}
