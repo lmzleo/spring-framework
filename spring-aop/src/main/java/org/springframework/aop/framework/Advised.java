@@ -35,6 +35,16 @@ import org.springframework.aop.TargetSource;
  * @since 13.03.2003
  * @see org.springframework.aop.framework.AdvisedSupport
  */
+
+/**
+ * 该接口用于保存一个代理的相关配置（简单理解为这个对象保存了怎么创建一个代理对象的信息），
+ * 比如这个代理配置相关的拦截器，建议(advisor)或者增强器（advice)；
+ * 		所有的代理对象都实现了该接口（我们就能够通过一个代理对象获取这个代理对象怎么被代理出来的相关信息）；
+ *
+ * 	Advised接口中的getTargetSource返回的就是TargetSource。意思就是Advised和TargetSource接口虽然在继承关系上，
+ * 	都是继承了TargetClassAware接口，看似平级关系，实际上确实组合关系：
+ *
+ */
 public interface Advised extends TargetClassAware {
 
 	/**

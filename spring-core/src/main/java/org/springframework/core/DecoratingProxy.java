@@ -34,6 +34,10 @@ package org.springframework.core;
  * @author Juergen Hoeller
  * @since 4.3
  */
+
+/**
+ * 接口通过装饰代理来实现，特别是Spring AOP代理，但也可能自定义代理与装饰语义。
+ */
 public interface DecoratingProxy {
 
 	/**

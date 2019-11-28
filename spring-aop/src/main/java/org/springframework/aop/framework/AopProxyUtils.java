@@ -59,7 +59,7 @@ public abstract class AopProxyUtils {
 	 */
 	@Nullable
 	public static Object getSingletonTarget(Object candidate) {
-		//如果当前获取的目标对象是一个Advised类型对象
+		//如果当前获取的目标对象是一个Advised类型对象(aop代理对象都实现该借款)
 		if (candidate instanceof Advised) {
 			//通过getTargetSource方法获取代理目标
 			TargetSource targetSource = ((Advised) candidate).getTargetSource();
@@ -127,6 +127,10 @@ public abstract class AopProxyUtils {
 	 * @return the complete set of interfaces to proxy
 	 * @see SpringProxy
 	 * @see Advised
+	 */
+	/**
+	 * 判断一个advised真正需要代理的目标接口列表。简单理解，比如在spring使用JDK proxy做代理的时候，
+	 * 这个方法返回的类型列表就是真正需要交给Proxy.newProxyInstance方法的接口列表
 	 */
 	public static Class<?>[] completeProxiedInterfaces(AdvisedSupport advised) {
 		return completeProxiedInterfaces(advised, false);
@@ -198,18 +202,27 @@ public abstract class AopProxyUtils {
 	 * in the original order (never {@code null} or empty)
 	 * @see Advised
 	 */
+	/**
+	 * 用于获取一个代理对象中的用户定义的接口，即非（Advised接口体系）之外的其他接口
+	 */
 	public static Class<?>[] proxiedUserInterfaces(Object proxy) {
+		//得到所有接口
 		Class<?>[] proxyInterfaces = proxy.getClass().getInterfaces();
 		int nonUserIfcCount = 0;
+		//如果是代理，一定实现了SpringProxy
 		if (proxy instanceof SpringProxy) {
 			nonUserIfcCount++;
 		}
+		//如果是代理，可能实现了Advised；
 		if (proxy instanceof Advised) {
 			nonUserIfcCount++;
 		}
+		//如果是代理，可能实现了DecoratingProxy，装饰代理
 		if (proxy instanceof DecoratingProxy) {
 			nonUserIfcCount++;
 		}
+		//拷贝proxyInterfaces中从第0位~第proxyInterfaces.length - nonUserIfcCount个
+		//去掉尾巴上的nonUserIfcCount个；
 		Class<?>[] userInterfaces = new Class<?>[proxyInterfaces.length - nonUserIfcCount];
 		System.arraycopy(proxyInterfaces, 0, userInterfaces, 0, userInterfaces.length);
 		Assert.notEmpty(userInterfaces, "JDK proxy must implement one or more interfaces");
@@ -217,6 +230,8 @@ public abstract class AopProxyUtils {
 	}
 
 	/**
+	 * 判断两个（即将）代理出来的对象是否相同；
+	 *
 	 * Check equality of the proxies behind the given AdvisedSupport objects.
 	 * Not the same as equality of the AdvisedSupport objects:
 	 * rather, equality of interfaces, advisors and target sources.
@@ -227,6 +242,8 @@ public abstract class AopProxyUtils {
 	}
 
 	/**
+	 * 判断两个（即将）代理出来的对象是否拥有相同接口；
+	 *
 	 * Check equality of the proxied interfaces behind the given AdvisedSupport objects.
 	 */
 	public static boolean equalsProxiedInterfaces(AdvisedSupport a, AdvisedSupport b) {
@@ -234,6 +251,8 @@ public abstract class AopProxyUtils {
 	}
 
 	/**
+	 * 判断两个（即将）代理出来的对象是否拥有相同的建议者（Advisor）
+	 *
 	 * Check equality of the advisors behind the given AdvisedSupport objects.
 	 */
 	public static boolean equalsAdvisors(AdvisedSupport a, AdvisedSupport b) {
@@ -242,6 +261,9 @@ public abstract class AopProxyUtils {
 
 
 	/**
+	 * 将给定的参数调整为给定方法中的目标签名，如果需要:特别是，如果一个给定的变量数组不需要
+	 * 匹配方法中声明的可变参数的数组类型。
+	 *
 	 * Adapt the given arguments to the target signature in the given method,
 	 * if necessary: in particular, if a given vararg argument array does not
 	 * match the array type of the declared vararg parameter in the method.

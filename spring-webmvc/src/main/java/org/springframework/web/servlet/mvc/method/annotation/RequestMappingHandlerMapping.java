@@ -172,6 +172,10 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	 * <p>Expects a handler to have either a type-level @{@link Controller}
 	 * annotation or a type-level @{@link RequestMapping} annotation.
 	 */
+	/**
+	 * 是否是处理器：
+	 * 		类是否被		Controller注解	或者		RequestMapping注解	标注
+	 */
 	@Override
 	protected boolean isHandler(Class<?> beanType) {
 		return (AnnotatedElementUtils.hasAnnotation(beanType, Controller.class) ||
@@ -189,10 +193,19 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	@Override
 	@Nullable
 	protected RequestMappingInfo getMappingForMethod(Method method, Class<?> handlerType) {
+		/**
+		 * 方法上的RequestMapping注解
+		 */
 		RequestMappingInfo info = createRequestMappingInfo(method);
 		if (info != null) {
+			/**
+			 * 类上的RequestMapping注解
+			 */
 			RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
 			if (typeInfo != null) {
+				/**
+				 * 合并类上和方法上的注解信息
+				 */
 				info = typeInfo.combine(info);
 			}
 		}
@@ -209,6 +222,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	@Nullable
 	private RequestMappingInfo createRequestMappingInfo(AnnotatedElement element) {
 		RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
+		/**
+		 * 处理自定义的注解，由子类实现
+		 */
 		RequestCondition<?> condition = (element instanceof Class ?
 				getCustomTypeCondition((Class<?>) element) : getCustomMethodCondition((Method) element));
 		return (requestMapping != null ? createRequestMappingInfo(requestMapping, condition) : null);
@@ -255,6 +271,9 @@ public class RequestMappingHandlerMapping extends RequestMappingInfoHandlerMappi
 	protected RequestMappingInfo createRequestMappingInfo(
 			RequestMapping requestMapping, @Nullable RequestCondition<?> customCondition) {
 
+		/**
+		 * 封装RequestMappingInfo对象
+		 */
 		RequestMappingInfo.Builder builder = RequestMappingInfo
 				.paths(resolveEmbeddedValuesInPatterns(requestMapping.path()))
 				.methods(requestMapping.method())
