@@ -23,6 +23,8 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 
 /**
+ * 策略接口，用于将方法参数分解为给定请求的上下文。
+ * 用于解析参数
  * Strategy interface for resolving method parameters into argument values in
  * the context of a given request.
  *

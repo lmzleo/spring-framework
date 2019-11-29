@@ -111,6 +111,8 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 
 	/**
+	 * 在给定请求的上下文中解析其参数值后调用该方法。
+	 *
 	 * Invoke the method after resolving its argument values in the context of the given request.
 	 * <p>Argument values are commonly resolved through {@link HandlerMethodArgumentResolver}s.
 	 * The {@code providedArgs} parameter however may supply argument values to be used directly,
@@ -124,15 +126,22 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	 * @throws Exception raised if no suitable argument resolver can be found,
 	 * or if the method raised an exception
 	 */
+	/**
+	 * 在给定请求的上下文中解析其参数值后调用该方法。
+	 * 参数绑定
+	 * 在DispatchServlet中处理拦截器初始化之后调用该方法，绑定参数
+	 */
 	@Nullable
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		//参数解析
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Invoking '" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
 					"' with arguments " + Arrays.toString(args));
 		}
+		//参数绑定后，真正执行HandlerMethod对象
 		Object returnValue = doInvoke(args);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Method [" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
@@ -142,11 +151,14 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	}
 
 	/**
+	 * 获取当前请求的方法参数值。
+	 * 参数解析过程
 	 * Get the method argument values for the current request.
 	 */
 	private Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		//得到方法参数
 		MethodParameter[] parameters = getMethodParameters();
 		Object[] args = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
@@ -156,8 +168,10 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			if (args[i] != null) {
 				continue;
 			}
+			//看看参数解析器是否可以解析这个参数
 			if (this.argumentResolvers.supportsParameter(parameter)) {
 				try {
+					//执行参数解析
 					args[i] = this.argumentResolvers.resolveArgument(
 							parameter, mavContainer, request, this.dataBinderFactory);
 					continue;

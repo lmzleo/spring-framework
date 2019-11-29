@@ -89,20 +89,29 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 	}
 
 
+	/**
+	 * 简单类型参数解析
+	 */
 	@Override
 	@Nullable
 	public final Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		//该对象分装了  方法参数名称	是否必须	默认值	这三个信息
 		NamedValueInfo namedValueInfo = getNamedValueInfo(parameter);
 		MethodParameter nestedParameter = parameter.nestedIfOptional();
-
+		/**
+		 * 解析出来方法参数名称
+		 */
 		Object resolvedName = resolveStringValue(namedValueInfo.name);
 		if (resolvedName == null) {
 			throw new IllegalArgumentException(
 					"Specified name must not resolve to null: [" + namedValueInfo.name + "]");
 		}
 
+		/**
+		 * 解析出来请求参数中指定名称的参数值，该参数此时是字符串类型
+		 */
 		Object arg = resolveName(resolvedName.toString(), nestedParameter, webRequest);
 		if (arg == null) {
 			if (namedValueInfo.defaultValue != null) {
@@ -120,6 +129,10 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 		if (binderFactory != null) {
 			WebDataBinder binder = binderFactory.createBinder(webRequest, null, namedValueInfo.name);
 			try {
+				/**
+				 * 利用参数绑定器将字符串类型的请求参数值转换成指定方法参数类型的值
+				 * 参数转换方式有两种处理方式：PropertyEditor和ConversionService
+				 */
 				arg = binder.convertIfNecessary(arg, parameter.getParameterType(), parameter);
 			}
 			catch (ConversionNotSupportedException ex) {
@@ -194,6 +207,7 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 	}
 
 	/**
+	 * 将给定的参数类型和值名解析为参数值。
 	 * Resolve the given parameter type and value name into an argument value.
 	 * @param name the name of the value being resolved
 	 * @param parameter the method parameter to resolve to an argument value

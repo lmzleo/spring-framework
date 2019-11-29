@@ -109,6 +109,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	}
 
 	/**
+	 * 遍历所有的HandlerMethod参数解析器，并调用哪个可以解析给定参数的解析器
 	 * Iterate over registered {@link HandlerMethodArgumentResolver}s and invoke the one that supports it.
 	 * @throws IllegalStateException if no suitable {@link HandlerMethodArgumentResolver} is found.
 	 */
@@ -117,15 +118,27 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		/**
+		 * 根据参数获取具体的参数解析器
+		 */
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unknown parameter type [" + parameter.getParameterType().getName() + "]");
 		}
+		/**
+		 * 调用具体的参数解析器进行解析
+		 * 其中简单类型调用的都是AbstractNamedValueMethodArgumentResolver类中的方法；
+		 * 	 * POJO类型调用的都是ModelAttributeMethodProcessor类中的方法
+		 */
 		return resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 	}
 
 	/**
-	 * Find a registered {@link HandlerMethodArgumentResolver} that supports the given method parameter.
+	 * 查找一个已注册的{@link HandlerMethodArgumentResolver}，它支持给定的方法参数解析
+	 * 根据参数获取具体的参数解析器
+	 * 此处需要根据具体参数类型调用相应的解析器，
+	 * 其中简单类型调用的都是AbstractNamedValueMethodArgumentResolver类中的方法；
+	 * POJO类型调用的都是ModelAttributeMethodProcessor类中的方法
 	 */
 	@Nullable
 	private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
