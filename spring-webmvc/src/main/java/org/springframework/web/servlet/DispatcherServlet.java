@@ -320,6 +320,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 	/** List of HandlerMappings used by this servlet */
 	/**
+	 * 请求映射器，将请求与method进行映射
 	 * 默认：
 	 * org.springframework.web.servlet.HandlerMapping=
 	 * 		 * 		org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping,\

@@ -162,6 +162,7 @@ public class UrlPathHelper {
 	 */
 	public String getLookupPathForRequest(HttpServletRequest request) {
 		// Always use full path within current servlet context?
+		//始终在当前servlet上下文中使用完整路径
 		if (this.alwaysUseFullPath) {
 			return getPathWithinApplication(request);
 		}

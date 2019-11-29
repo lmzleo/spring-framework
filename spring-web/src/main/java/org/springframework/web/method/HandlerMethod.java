@@ -51,6 +51,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Sam Brannen
  * @since 3.1
  */
+
+/**
+ * 封装了请求处理类和方法信息
+ */
 public class HandlerMethod {
 
 	/** Logger that is available to subclasses */

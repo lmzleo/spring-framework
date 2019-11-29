@@ -91,6 +91,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	@Nullable
 	private HandlerMethodMappingNamingStrategy<T> namingStrategy;
 
+	/**
+	 * 初始化时将URL和RequestMappingInfo、HandlerMethod和RequestMappingInfo对象进行映射
+	 */
 	private final MappingRegistry mappingRegistry = new MappingRegistry();
 
 
@@ -107,6 +110,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	}
 
 	/**
+	 * 配置命名策略，将其用于为每个映射处理程序方法。
 	 * Configure the naming strategy to use for assigning a default name to every
 	 * mapped handler method.
 	 * <p>The default naming strategy is based on the capital letters of the
@@ -222,8 +226,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				 */
 				if (beanType != null && isHandler(beanType)) {
 					/**
-					 * 将URL和HandlerMethodInfo进行映射
-					 * 将HandlerMethodInfo和HandlerMethod进行映射
+					 * 将URL和RequestMappingInfo进行映射
+					 * 将RequestMappingInfo和HandlerMethod进行映射
 					 * 最终达到根据URL找到对应HandlerMethod
 					 */
 					detectHandlerMethods(beanName);
@@ -265,7 +269,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			methods.forEach((method, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
 				/**
-				 * 将hanler和method封装成HandlerMethod对象，进行映射注册（URL和HandlerMethodInfo、HandlerMethod和HandlerMethodInfo对象）
+				 * 将hanler和method封装成HandlerMethod对象，进行映射注册（URL和RequestMappingInfo、HandlerMethod和RequestMappingInfo对象）
 				 */
 				registerHandlerMethod(handler, invocableMethod, mapping);
 			});
@@ -324,7 +328,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 	/**
 	 * Look up a handler method for the given request.
-	 * 查找给定请求的处理程序方法。
+	 * 查找给定请求的处理方法。
 	 */
 	@Override
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
@@ -335,6 +339,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		if (logger.isDebugEnabled()) {
 			logger.debug("Looking up handler method for path " + lookupPath);
 		}
+		//在使用getMappings和getMappingsByUrl时获取读锁。获取mappingRegistry对象的读锁
 		this.mappingRegistry.acquireReadLock();
 		try {
 			/**
@@ -355,6 +360,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
 		}
 		finally {
+			//在使用getMappings和getMappingsByUrl时解除读锁。
 			this.mappingRegistry.releaseReadLock();
 		}
 	}
@@ -532,8 +538,14 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 		private final Map<T, MappingRegistration<T>> registry = new HashMap<>();
 
+		/**
+		 * 将HandlerMethod和RequestMappingInfo进行映射
+		 */
 		private final Map<T, HandlerMethod> mappingLookup = new LinkedHashMap<>();
 
+		/**
+		 * 将url和RequestMappingInfo进行映射
+		 */
 		private final MultiValueMap<String, T> urlLookup = new LinkedMultiValueMap<>();
 
 		private final Map<String, List<HandlerMethod>> nameLookup = new ConcurrentHashMap<>();
@@ -575,6 +587,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		}
 
 		/**
+		 * 在使用getMappings和getMappingsByUrl时获取读锁。
+		 *
 		 * Acquire the read lock when using getMappings and getMappingsByUrl.
 		 */
 		public void acquireReadLock() {
@@ -590,7 +604,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 		/**
 		 *将hanler和method封装成HandlerMethod对象，进行映射注册
-		 * 				 （URL和HandlerMethodInfo、HandlerMethod和HandlerMethodInfo对象）
+		 * 				 （URL和RequestMappingInfo、HandlerMethod和RequestMappingInfo对象）
 		 * @param mapping	RequestMappingInfo对象	@RequestMapping注解信息
 		 * @param handler	beanName
 		 * @param method	RequestMapping注解方法
@@ -599,7 +613,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			this.readWriteLock.writeLock().lock();
 			try {
 				/**
-				 * 封装HandlerMethod对象
+				 * 封装HandlerMethod对象  请求处理器类和方法信息
 				 */
 				HandlerMethod handlerMethod = createHandlerMethod(handler, method);
 				//确保一个RequestMappingInfo对象只对应一个HandlerMethod对象，一个请求只有一个可执行方法
@@ -613,6 +627,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				 */
 				this.mappingLookup.put(mapping, handlerMethod);
 
+				/**
+				 * 获取可匹配的所有路径，支持模糊匹配（* ？）
+				 */
 				List<String> directUrls = getDirectUrls(mapping);
 				for (String url : directUrls) {
 					/**

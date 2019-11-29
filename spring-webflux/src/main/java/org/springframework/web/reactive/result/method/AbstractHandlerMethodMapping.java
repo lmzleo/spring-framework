@@ -190,8 +190,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				 */
 				if (beanType != null && isHandler(beanType)) {
 					/**
-					 * 将URL和HandlerMethodInfo进行映射
-					 * 将HandlerMethodInfo和HandlerMethod进行映射
+					 * 将URL和RequestMappingInfo进行映射
+					 * 将RequestMappingInfo和HandlerMethod进行映射
 					 * 最终达到根据URL找到对应的HandlerMethod
 					 */
 					detectHandlerMethods(beanName);
@@ -239,7 +239,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			methods.forEach((key, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(key, userType);
 				/**
-				 * 将handler和method封装成HandlerMethod对象进行映射注册(Url 和HandlerMethod,HandlerMethod和 HandlerMethodInfo对象)
+				 * 将handler和method封装成HandlerMethod对象进行映射注册(Url 和HandlerMethod,HandlerMethod和 RequestMappingInfo对象)
 				 */
 				registerHandlerMethod(handler, invocableMethod, mapping);
 			});
@@ -520,7 +520,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		}
 
 		/**
-		 * 将handler和method封装成HandlerMethod对象进行映射注册(Url 和HandlerMethod,HandlerMethod和 HandlerMethodInfo对象)
+		 * 将handler和method封装成HandlerMethod对象进行映射注册(Url 和HandlerMethod,HandlerMethod和 RequestMappingInfo对象)
 		 * @param mapping	RequestMappingInfo对象，@RequestMapping注解解析对象
 		 * @param handler	处理类，Controller类
 		 * @param method	具体方法，特就是@RequestMapping注解标注的方法

@@ -349,7 +349,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		/**
 		 * getHandlerInternal：
-		 * 		交给具体的子类去实现，不通的子类返回的Handler对象是不一样的，比如使用RequestMappingHandlerMapping返回的
+		 * 		交给具体的子类去实现，不通同的子类返回的Handler对象是不一样的，比如使用RequestMappingHandlerMapping返回的
 		 * 	Handler对象类型其实是HandlerMethod
 		 */
 		Object handler = getHandlerInternal(request);
