@@ -157,6 +157,11 @@ public class RequestMappingHandlerAdapter implements HandlerAdapter, Application
 	public void afterPropertiesSet() throws Exception {
 		Assert.notNull(this.applicationContext, "ApplicationContext is required");
 
+		/**
+		 * 分别注册了处理器增强类的相关操作（@ModelAttribute、@InitBinder、@ExceptionHandler）、参数解析器、initBinder参数解析器、返回值处理器
+		 * 这些注册的参数解析器和返回值处理器会在执行Handler方法时进行调用。
+		 * 在请求进入时处理，DispatcherServlet的doDispatch方法
+		 */
 		if (CollectionUtils.isEmpty(this.messageReaders)) {
 			ServerCodecConfigurer codecConfigurer = ServerCodecConfigurer.create();
 			this.messageReaders = codecConfigurer.getReaders();
