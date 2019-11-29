@@ -242,12 +242,19 @@ public abstract class AbstractJackson2HttpMessageConverter extends AbstractGener
 		}
 	}
 
+	/**
+	 * 处理返回值，@ResponseBody注解支持
+	 */
 	@Override
 	protected void writeInternal(Object object, @Nullable Type type, HttpOutputMessage outputMessage)
 			throws IOException, HttpMessageNotWritableException {
 
 		MediaType contentType = outputMessage.getHeaders().getContentType();
 		JsonEncoding encoding = getJsonEncoding(contentType);
+		/**
+		 * JsonGenerator:MappingJackson的API
+		 * 该方法的主要宗旨就是讲POJO类使用MappingJackson的API转换为JSON字符串
+		 */
 		JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputMessage.getBody(), encoding);
 		try {
 			writePrefix(generator, object);
@@ -283,6 +290,9 @@ public abstract class AbstractJackson2HttpMessageConverter extends AbstractGener
 					config.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
 				objectWriter = objectWriter.with(this.ssePrettyPrinter);
 			}
+			/**
+			 * 调用MappingJackson的API完成JSON转换
+			 */
 			objectWriter.writeValue(generator, value);
 
 			writeSuffix(generator, object);

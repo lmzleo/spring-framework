@@ -76,6 +76,7 @@ public abstract class AbstractGenericHttpMessageConverter<T> extends AbstractHtt
 	}
 
 	/**
+	 * 这个实现通过调用{@link #addDefaultHeaders}来设置默认的头信息，然后调用{@link #writeInternal}。
 	 * This implementation sets the default headers by calling {@link #addDefaultHeaders},
 	 * and then calls {@link #writeInternal}.
 	 */
@@ -99,6 +100,7 @@ public abstract class AbstractGenericHttpMessageConverter<T> extends AbstractHtt
 			}));
 		}
 		else {
+			//处理方法
 			writeInternal(t, type, outputMessage);
 			outputMessage.getBody().flush();
 		}
@@ -112,6 +114,7 @@ public abstract class AbstractGenericHttpMessageConverter<T> extends AbstractHtt
 	}
 
 	/**
+	 * 编写实际主体的抽象模板方法。从{@link #write}调用。
 	 * Abstract template method that writes the actual body. Invoked from {@link #write}.
 	 * @param t the object to write to the output message
 	 * @param type the type of object to write (may be {@code null})

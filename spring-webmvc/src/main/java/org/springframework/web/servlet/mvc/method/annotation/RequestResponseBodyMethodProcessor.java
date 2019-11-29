@@ -59,6 +59,10 @@ import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
  * @author Juergen Hoeller
  * @since 3.1
  */
+
+/**
+ * 对 @RequestBody 和 @ResponseBody 注解的支持
+ */
 public class RequestResponseBodyMethodProcessor extends AbstractMessageConverterMethodProcessor {
 
 	/**
@@ -167,6 +171,9 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		return (requestBody != null && requestBody.required() && !parameter.isOptional());
 	}
 
+	/**
+	 * 对返回值进行处理，由返回值处理类HandlerMethodReturnValueHandlerComposite中的handleReturnValue方法调用
+	 */
 	@Override
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest)
@@ -177,6 +184,7 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		ServletServerHttpResponse outputMessage = createOutputMessage(webRequest);
 
 		// Try even with null return value. ResponseBodyAdvice could get involved.
+		//尝试使用空返回值。ResponseBodyAdvice可以参与进来。
 		writeWithMessageConverters(returnValue, returnType, inputMessage, outputMessage);
 	}
 

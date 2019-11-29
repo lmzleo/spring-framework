@@ -219,7 +219,14 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 		}
 		else {
 			HttpServletRequest request = inputMessage.getServletRequest();
+			/**
+			 * 获取request的accept请求头
+			 */
 			List<MediaType> requestedMediaTypes = getAcceptableMediaTypes(request);
+			/**
+			 * 获取response的content-type
+			 * 返回可以生成的媒体类型:
+			 */
 			List<MediaType> producibleMediaTypes = getProducibleMediaTypes(request, valueType, declaredType);
 
 			if (outputValue != null && producibleMediaTypes.isEmpty()) {
@@ -229,6 +236,9 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 			mediaTypesToUse = new ArrayList<>();
 			for (MediaType requestedType : requestedMediaTypes) {
 				for (MediaType producibleType : producibleMediaTypes) {
+					/**
+					 * 判断request中的accept请求头中的媒体类型是否包含response需要的content-type中的值
+					 */
 					if (requestedType.isCompatibleWith(producibleType)) {
 						mediaTypesToUse.add(getMostSpecificMediaType(requestedType, producibleType));
 					}
@@ -246,6 +256,9 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 		MediaType selectedMediaType = null;
 		for (MediaType mediaType : mediaTypesToUse) {
 			if (mediaType.isConcrete()) {
+				/**
+				 * 可用的媒体类型，就是上面获取到的媒体类型
+				 */
 				selectedMediaType = mediaType;
 				break;
 			}
@@ -261,6 +274,10 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 				GenericHttpMessageConverter genericConverter =
 						(converter instanceof GenericHttpMessageConverter ? (GenericHttpMessageConverter<?>) converter : null);
 				if (genericConverter != null ?
+						/**
+						 * canWrite:
+						 * 		判断是否可以处理该返回值
+						 */
 						((GenericHttpMessageConverter) converter).canWrite(declaredType, valueType, selectedMediaType) :
 						converter.canWrite(valueType, selectedMediaType)) {
 					outputValue = (T) getAdvice().beforeBodyWrite(outputValue, returnType, selectedMediaType,
@@ -269,6 +286,9 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 					if (outputValue != null) {
 						addContentDispositionHeader(inputMessage, outputMessage);
 						if (genericConverter != null) {
+							/**
+							 * 真正处理返回值
+							 */
 							genericConverter.write(outputValue, declaredType, selectedMediaType, outputMessage);
 						}
 						else {
@@ -329,6 +349,8 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 	}
 
 	/**
+	 * 返回可以生成的媒体类型:
+	 *
 	 * Returns the media types that can be produced:
 	 * <ul>
 	 * <li>The producible media types specified in the request mappings, or
