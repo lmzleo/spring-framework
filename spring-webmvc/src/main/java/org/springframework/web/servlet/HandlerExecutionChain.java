@@ -123,20 +123,32 @@ public class HandlerExecutionChain {
 
 
 	/**
+	 * 应用已注册拦截器的预处理方法。
+	 *
 	 * Apply preHandle methods of registered interceptors.
 	 * @return {@code true} if the execution chain should proceed with the
 	 * next interceptor or the handler itself. Else, DispatcherServlet assumes
 	 * that this interceptor has already dealt with the response itself.
 	 */
 	boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		/**
+		 * 获取当前HandlerMapping返回的拦截器集合
+		 */
 		HandlerInterceptor[] interceptors = getInterceptors();
 		if (!ObjectUtils.isEmpty(interceptors)) {
 			for (int i = 0; i < interceptors.length; i++) {
 				HandlerInterceptor interceptor = interceptors[i];
+				/**
+				 * 执行拦截器preHandler方法
+				 */
 				if (!interceptor.preHandle(request, response, this.handler)) {
 					triggerAfterCompletion(request, response, null);
 					return false;
 				}
+				/**
+				 * 记录最后成功执行的处理器拦截器在拦截器集合中的下标
+				 * 影响postHandler和afterCompletion方法的执行顺序
+				 */
 				this.interceptorIndex = i;
 			}
 		}
@@ -144,6 +156,7 @@ public class HandlerExecutionChain {
 	}
 
 	/**
+	 * 应用注册拦截器后的方法。
 	 * Apply postHandle methods of registered interceptors.
 	 */
 	void applyPostHandle(HttpServletRequest request, HttpServletResponse response, @Nullable ModelAndView mv)
@@ -151,14 +164,20 @@ public class HandlerExecutionChain {
 
 		HandlerInterceptor[] interceptors = getInterceptors();
 		if (!ObjectUtils.isEmpty(interceptors)) {
+			//倒叙
 			for (int i = interceptors.length - 1; i >= 0; i--) {
 				HandlerInterceptor interceptor = interceptors[i];
+				//执行postHandle方法
 				interceptor.postHandle(request, response, this.handler, mv);
 			}
 		}
 	}
 
 	/**
+	 * 拦截器完成方法
+	 * 在映射的handlerinterceptor上触发完成后回调。
+	 * 只会执行拦截初始化成功的拦截器中的afterCompletion方法，一个拦截器中applyPreHandle方法执行成功才会执行该拦截器中的afterCompletion方法
+	 *
 	 * Trigger afterCompletion callbacks on the mapped HandlerInterceptors.
 	 * Will just invoke afterCompletion for all interceptors whose preHandle invocation
 	 * has successfully completed and returned true.
@@ -168,6 +187,9 @@ public class HandlerExecutionChain {
 
 		HandlerInterceptor[] interceptors = getInterceptors();
 		if (!ObjectUtils.isEmpty(interceptors)) {
+			/**
+			 * 边界是preHandle方法复制的interceptorIndex，倒叙执行afterCompletion方法
+			 */
 			for (int i = this.interceptorIndex; i >= 0; i--) {
 				HandlerInterceptor interceptor = interceptors[i];
 				try {

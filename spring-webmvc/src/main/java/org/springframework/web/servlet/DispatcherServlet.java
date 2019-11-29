@@ -1028,6 +1028,10 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+				/**
+				 * 拦截器处理流程
+				 * 执行拦截器的preHandler方法
+				 */
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
@@ -1043,6 +1047,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				applyDefaultViewName(processedRequest, mv);
+				/**
+				 * 执行拦截器的postHandler方法
+				 */
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1051,17 +1058,25 @@ public class DispatcherServlet extends FrameworkServlet {
 			catch (Throwable err) {
 				// As of 4.3, we're processing Errors thrown from handler methods as well,
 				// making them available for @ExceptionHandler methods and other scenarios.
+
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
 			/**
 			 * 处理器执行结果，也就是对ModelAndView进行处理：视图解析，视图渲染
+			 * 执行拦截器的afterCompletion方法
 			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {
+			/**
+			 * 执行拦截器的afterCompletion方法
+			 */
 			triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
 		}
 		catch (Throwable err) {
+			/**
+			 * 执行拦截器的afterCompletion方法
+			 */
 			triggerAfterCompletion(processedRequest, response, mappedHandler,
 					new NestedServletException("Handler processing failed", err));
 		}

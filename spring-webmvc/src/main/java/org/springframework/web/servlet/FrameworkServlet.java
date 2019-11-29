@@ -970,7 +970,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * {@link #doService} template method.
 	 */
 	/**
-	 * 处理请求
+	 * 处理请求,无论是doGet  还是 doPost  ，最终都是调用改方法处理请求
 	 */
 	protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
